@@ -22,6 +22,8 @@
    This sample shows how to detect a human objects and draw their
    modelised skeleton in an OpenGL window
 """
+import time
+
 import cv2
 import sys
 import pyzed.sl as sl
@@ -30,34 +32,24 @@ import cv_viewer.tracking_viewer as cv_viewer
 import numpy as np
 import argparse
 
-usage = "usage: python3 body_track.py [(-r | --record) record_filename] [(-p | --playback) playback_filename]\n" \
+usage = "usage: python3 body_track.py [(-r | --record) record_filename] [(-p | --playback) playback_filename] [-s | --skeleton keypoints]\n" \
         "\trecord_filename: SVO file name for recording frame data" \
-        "\tplayback_filename: SVO file name for playback"
-
-def update_console(objects):
-    if objects.is_new:
-        # Count the number of objects detected
-        obj_array = objects.object_list
-
-        if len(obj_array) > 0:
-            first_object = objects.object_list[0]
-            # Display the 3D keypoint coordinates of the first detected person
-            keypoint = first_object.keypoint
-
-            # Just right hand
-            # https://www.stereolabs.com/docs/body-tracking/#how-it-works for each body point pose
-            print(keypoint[4][0], keypoint[4][1], keypoint[4][2])
+        "\tplayback_filename: SVO file name for playback" \
+        "\tkeypoints: keypoint values being recorded. By default not using this flag will record all points"
 
 if __name__ == "__main__":
     filename = None
     recording = False
     playback = False
+    analyzed_keypoints = []
     try:
         argparser = argparse.ArgumentParser(description='process arguments for configuration of ZED2')
         argparser.add_argument('-r', '--record', metavar='filename', dest='record_filename',
                                type=str, nargs=1, help="record_filename: SVO file name for recording frame data")
         argparser.add_argument('-p', '--playback', metavar='filename', dest='playback_filename',
                                type=str, nargs=1, help="playback_filename: SVO file name for playback")
+        argparser.add_argument('-k', '--keypoints', metavar='filename', dest='keypoints', action='append',
+                               type=str, nargs="*", help="keypoints: list of keypoints to keep track of")
         args = argparser.parse_args()
         if args.record_filename:
             filename = args.record_filename[0]
@@ -67,12 +59,18 @@ if __name__ == "__main__":
             playback = True
         if args.record_filename and args.playback_filename:
             raise Exception("\tcannot playback and record a video at the same time")
+        if args.keypoints:
+            analyzed_keypoints += [int(number) for number in args.keypoints[0]]
+        else:
+            # analyzed_keypoints = range(0, 18)
+            analyzed_keypoints = [4] # temporary tests
     except Exception as e:
         print("Invalid use of main.py. Error:\n")
         print("\t", e)
         exit(1)
 
     print("Running Body Tracking sample ... Press 'q' to quit")
+    print(analyzed_keypoints)
 
     """ Configuration of the Camera """
     init_params = sl.InitParameters()
@@ -123,18 +121,16 @@ if __name__ == "__main__":
     https://www.stereolabs.com/docs/positional-tracking/area-memory/
     set_as_static: allows the depth stabilizer module to know the camera is static so it can disable visual tracking and reduce computational load
     """
-    tracking_params = sl.PositionalTrackingParameters()
-    tracking_params.set_as_static = True
-    tracking_params.area_file_path = "filename.area"
+
 
     # Initialize Camera
     zed = sl.Camera()
     err = zed.open(init_params)
     if err != sl.ERROR_CODE.SUCCESS:
         exit(1)
-    err = zed.enable_positional_tracking(tracking_params)
-    if err != sl.ERROR_CODE.SUCCESS:
-        exit(1)
+    # err = zed.enable_positional_tracking(tracking_params)
+    # if err != sl.ERROR_CODE.SUCCESS:
+    #     exit(1)
 
     # Configuration for recording
     if recording:
@@ -154,6 +150,7 @@ if __name__ == "__main__":
 
     # If the camera is static, set to True for efficiency
     positional_tracking_parameters.set_as_static = True
+    positional_tracking_parameters.area_file_path = "filename.area"
     zed.enable_positional_tracking(positional_tracking_parameters)
 
     """ Skeleton Tracking Configuration """
@@ -163,7 +160,7 @@ if __name__ == "__main__":
 
     """ Skeleton Configuration """
     obj_param.detection_model = sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE # accurate or speed
-    obj_param.body_format = sl.BODY_FORMAT.POSE_34  # Choose the BODY_FORMAT you wish to use; 18 or 34 keypoints
+    obj_param.body_format = sl.BODY_FORMAT.POSE_18  # Choose the BODY_FORMAT you wish to use; 18 or 34 keypoints
 
     # Enabling skeleton capture
     obj_param.image_sync = True
@@ -177,44 +174,94 @@ if __name__ == "__main__":
     # Get ZED camera information
     camera_info = zed.get_camera_information()
 
-    # 2D viewer utilities
+    # 2 CV viewer utilities
     display_resolution = sl.Resolution(min(camera_info.camera_resolution.width, 1280), min(camera_info.camera_resolution.height, 720))
     image_scale = [display_resolution.width / camera_info.camera_resolution.width
                  , display_resolution.height / camera_info.camera_resolution.height]
 
     # Create OpenGL viewer
     viewer = gl.GLViewer()
-    viewer.init(camera_info.calibration_parameters.left_cam, obj_param.enable_tracking,obj_param.body_format)
+    left_cam = camera_info.calibration_parameters.left_cam
+    viewer.init(left_cam, obj_param.enable_tracking,obj_param.body_format)
 
     # Create ZED objects filled in the main loop
     objects = sl.Objects()
     image = sl.Mat()
 
-    while viewer.is_available():
-        # Grab an image
-        if zed.grab() == sl.ERROR_CODE.SUCCESS:
-            """
-            Retrieving an Image
-            zed.retrieve_image(image, sl.VIEW, sl.MEM.CPU, display_resolution)
-            image: image object from zed2
-            sl.VIEW: LEFT, RIGHT, SIDE_BY_SIDE, UNRECTIFIED
-            """
-            zed.retrieve_image(image, sl.VIEW.SIDE_BY_SIDE, sl.MEM.CPU, display_resolution)
+    with open("output.txt", 'w') as file:
+        while viewer.is_available():
+            # Grab an image
+            if zed.grab() == sl.ERROR_CODE.SUCCESS:
+                """
+                Retrieving an Image
+                zed.retrieve_image(image, sl.VIEW, sl.MEM.CPU, display_resolution)
+                image: image object from zed2
+                sl.VIEW: LEFT, RIGHT, SIDE_BY_SIDE, UNRECTIFIED
+                """
+                # get unix_time of received image
+                unix_time = time.time()
 
-            # Retrieve objects
-            zed.retrieve_objects(objects, obj_runtime_param)
-            update_console(objects)
+                zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution)
 
-            # Update GL view
-            viewer.update_view(image, objects)
-            # Update OCV view
-            image_left_ocv = image.get_data()
-            cv_viewer.render_2D(image_left_ocv,image_scale,objects.object_list, obj_param.enable_tracking, obj_param.body_format)
-            cv2.imshow("ZED | 2D View", image_left_ocv)
-            cv2.waitKey(10)
-        elif zed.grab() == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
-            print("SVO end has been reached. Looping back to first frame")
-            zed.set_svo_position(0)
+                # Retrieve objects
+                zed.retrieve_objects(objects, obj_runtime_param)
+
+                # Update GL view
+                viewer.update_view(image, objects)
+                # Update OCV view
+                image_left_ocv = image.get_data()
+                cv_viewer.render_2D(image_left_ocv, image_scale, objects.object_list, obj_param.enable_tracking, obj_param.body_format)
+
+                if objects.is_new:
+                    # Count the number of objects detected
+                    obj_array = objects.object_list
+
+                    if len(obj_array) > 0:
+                        for object in objects.object_list:
+                            file.write("{},".format(unix_time))
+                            for keypoint in analyzed_keypoints:
+                                print(keypoint)
+                                point = object.keypoint[keypoint]
+                                # Writing to just this point at the moment
+                                file.write("{},{},{}".format(object.keypoint[keypoint][0],
+                                                             object.keypoint[keypoint][1],
+                                                             object.keypoint[keypoint][2]))
+                                if args.keypoints:
+                                        # Calculation of point coordinate
+                                        u_screen = int(display_resolution.width - 100 - (((point[0] / point[2]) * left_cam.fx + left_cam.cx) * image_scale[0]))
+                                        v_screen = int(((point[1] / point[2]) * left_cam.fy + left_cam.cy) * image_scale[1]) - 10
+
+                                        # Draw Image
+                                        bottomLeftCornerOfText = (u_screen, v_screen)
+                                        font = cv2.FONT_HERSHEY_PLAIN
+                                        fontScale = 2
+                                        thickness = 2
+                                        lineType = 2
+                                        cv2.putText(image_left_ocv,
+                                                    '{:.4f},{:.4f},{:.3f}'.format(point[0], point[1], point[2]),
+                                                    bottomLeftCornerOfText,
+                                                    font,
+                                                    fontScale,
+                                                    (0, 0, 0),
+                                                    thickness,
+                                                    lineType)
+                            file.write("\n")
+
+                cv2.rectangle(image_left_ocv, (0, 0), (410, 25), (255, 255, 255), -1)
+                cv2.putText(image_left_ocv,
+                            'UNIX TIME {}'.format(unix_time),
+                            (10, 25),
+                            cv2.FONT_HERSHEY_PLAIN,
+                            1.5,
+                            (0, 0, 0),
+                            2,
+                            3)
+
+                cv2.imshow("ZED | 2D View", image_left_ocv)
+                cv2.waitKey(10)
+            elif zed.grab() == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
+                print("SVO end has been reached. Looping back to first frame")
+                zed.set_svo_position(0)
 
     print("\nConfidence threshold: {0}".format(zed.get_runtime_parameters().confidence_threshold))
     print("Depth min and max range values: {0}, {1}".format(zed.get_init_parameters().depth_minimum_distance,
@@ -227,5 +274,5 @@ if __name__ == "__main__":
     # Disable modules and close camera
 
     zed.disable_object_detection()
-    zed.disable_positional_tracking("lab_room.area")
+    #zed.disable_positional_tracking("lab_room.area")
     zed.close()
