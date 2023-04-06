@@ -2,7 +2,7 @@
 Demo and example code working with the ZED2. These files are extensions of the [provided zed_examples from stereolabs](https://github.com/stereolabs/zed-examples/blob/master/body%20tracking/python/cv_viewer/tracking_viewer.py), each have a defined openCV and openGL folder for setting up the purpose of the camera.
 
 # Installation of ZED SDK
-## Provided is a step-by-step process for installation of the API, CUDA, and the required SDK libraries for use of the ZED camera. If the SDK and CUDA are up-to-date, then the API can be simply re-configured when needed. We recommend CUDA is pre-installed prior the the ZED SDK installation to cause less issues with their own installation if it appears in the future.
+## Provided is a step-by-step process for installation of the API, CUDA, and the required SDK libraries for use of the ZED camera. If the SDK and CUDA are up-to-date, then the API can be simply re-configured when needed. We recommend CUDA is pre-installed prior to the ZED SDK installation because it will cause less issues with the installation.
 
 ### API Installation
 The API has a quick installation through the requirements.txt file provided. Install in your virtual environment or base environment through the following terminal input. This will provide a more up to date version of dependencies for the current project.
