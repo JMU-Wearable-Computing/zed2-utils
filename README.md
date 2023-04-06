@@ -20,7 +20,7 @@ This will provide libraries such as opencv, opengl, and their API 'pyzed'
 ### CUDA
 CUDA is a library for graphics processing manipulation that is required for the camera. [Install the provided CUDA toolkit here](https://developer.nvidia.com/cuda-downloads), providing the correct answers to the prompt asking for your computers configuration. After provinding the correct input, then use the terminal inputs provided.
 
-Additionally, when running <code> sudo apt-get -y install cuda </code>, I used aptitude to resolve dependency issues (<code> sudo aptitude -y install cuda </code>. If aptitude is not installed, make sure to do <code> sudo apt-get install aptitude </code>
+Additionally, when running <code> sudo apt-get -y install cuda </code>, I used aptitude to resolve dependency issues (<code> sudo aptitude -y install cuda </code>). If aptitude is not installed, make sure to do <code> sudo apt-get install aptitude </code>
 
 For an example, our Ubuntu 18.04 Linux OS and x86_64 architecture provided the following code output for installation of CUDA
 
