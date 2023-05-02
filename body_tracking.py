@@ -50,7 +50,7 @@ if __name__ == "__main__":
                            help="record_filename: SVO file name for recording frame data. Must be .svo")
     argparser.add_argument('-p', '--playback', metavar='filename', dest='playback_filename',
                            type=str, nargs=1, help="playback_filename: SVO file name for playback. Must be .svo")
-    argparser.add_argument('-k', '--keypoints', metavar='filename', dest='keypoints', action='append',
+    argparser.add_argument('-k', '--keypoints', metavar='keypoint', dest='keypoints', action='append',
                            type=str, nargs="*", help="keypoints: list of keypoints to keep track of")
     args = argparser.parse_args()
     if args.record_filename:
@@ -250,12 +250,8 @@ if __name__ == "__main__":
                   ax, ay, az = vector_dict[vector]
 
                   # 3D distance
-                  # vect_diff = (vx-ax,vy-ay,vz-az)
-                  # vect_magnitude = math.sqrt(vect_diff[0]**2 + vect_diff[1]**2 + vect_diff[2]**2)
-
-                  # 2D distance
-                  vect_diff = (vx - ax, 0, vz - az)
-                  vect_magnitude = math.sqrt(vect_diff[0] ** 2 + vect_diff[2] ** 2)
+                  vect_diff = (vx-ax,vy-ay,vz-az)
+                  vect_magnitude = math.sqrt(vect_diff[0]**2 + vect_diff[1]**2 + vect_diff[2]**2)
 
                   best_vector = (vect_magnitude, vector) if best_vector[0] > vect_magnitude else best_vector
 
