@@ -72,4 +72,4 @@ You will also want to install certain dependencies for the code. Thankfully, a r
 
 Now the body_tracking.py program is useable. To know how to utilize the program and its flags, right click the program and *modify run configuration*. In the *parameters* field, type <code> -h </code> and run the program. Utilize these options/flags in this same *parameters* field prior to running the program for different uses. At the current moment, the skeleton flag tracking (through -k {0 1 2 ...}) will track the key points from the below skeleton graph.
 
-[skeleton graph](https://www.stereolabs.com/docs/body-tracking/images/keypoints_body18.png)
+![skeleton graph](https://www.stereolabs.com/docs/body-tracking/images/keypoints_body18.png)
