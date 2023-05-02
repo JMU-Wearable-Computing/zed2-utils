@@ -1,7 +1,7 @@
 # zed2-utils
 Demo and example code working with the ZED2. These files are extensions of the [provided zed_examples from stereolabs](https://github.com/stereolabs/zed-examples/blob/master/body%20tracking/python/cv_viewer/tracking_viewer.py), each have a defined openCV and openGL folder for setting up the purpose of the camera.
 
-# Installation of ZED SDK
+# Installation of ZED SDK ; LINUX Installation
 ## Provided is a step-by-step process for installation of the API, CUDA, and the required SDK libraries for use of the ZED camera. If the SDK and CUDA are up-to-date, then the API can be simply re-configured when needed. We recommend CUDA is pre-installed prior the the ZED SDK installation to cause less issues with their own installation if it appears in the future.
 
 ### API Installation
@@ -52,3 +52,19 @@ First, [go to the installation website](https://www.stereolabs.com/developers/re
 Running this can take a couple hours, but requires input after each stage for configuration of its systems and for calibration.
 
 After it is finally installed, the ZED camera can be manipulated using the pyzed library.
+
+# Installation of ZED SDK ; LINUX Installation
+Installation for windows is much simpler
+
+## Install the PyCharm Community Version IDE for Python development
+To install pycharm, [download the latest version]([https://www.python.org/downloads/](https://www.jetbrains.com/pycharm/download/download-thanks.html?platform=windows&code=PCC)). For the options during installation, add the bin to the PATH variables and create the .py association.
+
+You will also want to install these dependencies for running the code.
+
+<code> python -m pip install cython numpy opencv-python pyopengl </code>
+
+## Install the SDK
+To install the SDK, you run the executable for the SDK
+1. [Download the SDK for Windows 10/11](https://download.stereolabs.com/zedsdk/3.8/cu117/win)
+2. Run the executable to install the SDK and CUDA. Make sure CUDA is installed. If CUDA is not installed or you are not sure, install [CUDA 11.7 through this link](https://developer.nvidia.com/cuda-11-7-1-download-archive)
+
