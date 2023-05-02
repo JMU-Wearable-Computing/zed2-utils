@@ -62,7 +62,7 @@ Firstly, install the SDK. To install the SDK, you run the executable for the SDK
 2. Run the executable to install the SDK and CUDA. Make sure CUDA is installed. If CUDA is not installed or you are not sure, install [CUDA 11.7 through this link](https://developer.nvidia.com/cuda-11-7-1-download-archive)
 
 ## Install the PyCharm Community Version IDE for Python development
-Firstly, install a python version from 3.6.9 to 3.10. These versions are required for the 3.8 SDK. [Here is the download link](https://www.python.org/downloads/). Add the python version to your path variables (optional). Keep track of the location of pythons installation. It most likely will be in your file directory below.
+Firstly, install a python version 3.9. These versions are required for the 3.8 SDK. [Here is the download link](https://www.python.org/downloads/). Add the python version to your path variables (optional). Keep track of the location of pythons installation. It most likely will be in your file directory below.
 
 <code> C:\Users\*username*\AppData\Local\Programs\Python </code>
 
