@@ -56,15 +56,20 @@ After it is finally installed, the ZED camera can be manipulated using the pyzed
 # Installation of ZED SDK ; LINUX Installation
 Installation for windows is much simpler
 
-## Install the PyCharm Community Version IDE for Python development
-To install pycharm, [download the latest version]([https://www.python.org/downloads/](https://www.jetbrains.com/pycharm/download/download-thanks.html?platform=windows&code=PCC)). For the options during installation, add the bin to the PATH variables and create the .py association.
-
-You will also want to install these dependencies for running the code.
-
-<code> python -m pip install cython numpy opencv-python pyopengl </code>
-
 ## Install the SDK
-To install the SDK, you run the executable for the SDK
+Firstly, install the SDK. To install the SDK, you run the executable for the SDK
 1. [Download the SDK for Windows 10/11](https://download.stereolabs.com/zedsdk/3.8/cu117/win)
 2. Run the executable to install the SDK and CUDA. Make sure CUDA is installed. If CUDA is not installed or you are not sure, install [CUDA 11.7 through this link](https://developer.nvidia.com/cuda-11-7-1-download-archive)
 
+## Install the PyCharm Community Version IDE for Python development
+Firstly, install a python version from 3.6.9 to 3.10. These versions are required for the 3.8 SDK. [Here is the download link](https://www.python.org/downloads/). Add the python version to your path variables (optional). Keep track of the location of pythons installation. It most likely will be in your file directory below.
+
+<code> C:\Users\*username*\AppData\Local\Programs\Python </code>
+
+The Pycharm IDE will be the main area of python development. To install pycharm, [download the latest version]([https://www.python.org/downloads/](https://www.jetbrains.com/pycharm/download/download-thanks.html?platform=windows&code=PCC)). For the options during installation, add the bin to the PATH variables and create the .py association.
+
+You will also want to install certain dependencies for the code. Thankfully, a requirements.txt file provided in the github repository will help automate this issue. When opening the repository in pycharm, you will be prompted to install the requirements.txt dependencies in the top of the pycharm window. Install these dependencies.
+
+Now the body_tracking.py program is useable. To know how to utilize the program and its flags, right click the program and *modify run configuration*. In the *parameters* field, type <code> -h </code> and run the program. Utilize these options/flags in this same *parameters* field prior to running the program for different uses. At the current moment, the skeleton flag tracking (through -k {0 1 2 ...}) will track the key points from the below skeleton graph.
+
+[skeleton graph](https://www.stereolabs.com/docs/body-tracking/images/keypoints_body18.png)
