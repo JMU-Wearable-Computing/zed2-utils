@@ -21,6 +21,9 @@
 """
    This sample shows how to detect a human objects and draw their
    modelised skeleton in an OpenGL window
+
+   Edited by Will Bradford
+   Version: 9/18/23
 """
 import math
 import time
@@ -159,8 +162,8 @@ if __name__ == "__main__":
   obj_param.enable_tracking = True  # Track people across images flow
 
   """ Skeleton Configuration """
-  obj_param.detection_model = sl.DETECTION_MODEL.HUMAN_BODY_FAST  # ACCURATE or FAST
-  obj_param.body_format = sl.BODY_FORMAT.POSE_18  # Choose the BODY_FORMAT you wish to use; 18 or 34 keypoints
+  obj_param.detection_model = sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE  # ACCURATE or FAST
+  obj_param.body_format = sl.BODY_FORMAT.POSE_34  # Choose the BODY_FORMAT you wish to use; 18 or 34 keypoints
 
   # Enabling skeleton capture
   obj_param.image_sync = True
@@ -189,6 +192,9 @@ if __name__ == "__main__":
   objects = sl.Objects()
   image = sl.Mat()
 
+  # Window to smooth skeleton movement
+  window = []
+
   with open(filename[:-4] + ".txt", 'w') as file:
     interval_time = time.time()
     while viewer.is_available():
@@ -215,9 +221,22 @@ if __name__ == "__main__":
         viewer.update_view(image, objects)
         # Update OCV view
         image_left_ocv = image.get_data()
-        cv_viewer.render_2D(image_left_ocv, image_scale, objects.object_list, obj_param.enable_tracking,
+
+        # Update window
+        window.append(image_left_ocv)
+
+        # Change this value to shorten or lengthen the moving window
+        if len(window) > 1:
+          window.pop(0)
+
+        # Grab median image
+        image_to_show = window[int(len(window) / 2)]
+
+        cv_viewer.render_2D(image_to_show, image_scale, objects.object_list, obj_param.enable_tracking,
                             obj_param.body_format)
-        cv2.rectangle(image_left_ocv, (0, 0), (700, 25), (255, 255, 255), -1)
+
+        # Rectangle to hold unix time
+        # cv2.rectangle(image_to_show, (0, 0), (700, 25), (255, 255, 255), -1)
 
         if objects.is_new:
           # Count the number of objects detected
@@ -257,16 +276,20 @@ if __name__ == "__main__":
 
               file.write("\n")
 
-        cv2.putText(image_left_ocv,
+        # Incompatible with image flipping
+        """cv2.putText(image_to_show,
                     'UNIX TIME {}'.format(unix_time),
                     (10, 25),
                     cv2.FONT_HERSHEY_PLAIN,
                     1.5,
                     (0, 0, 0),
                     2,
-                    3)
+                    3)"""
 
-        cv2.imshow("ZED | 2D View", image_left_ocv)
+        # Flip image horizontally
+        image_to_show = np.flip(image_to_show, axis=1)
+
+        cv2.imshow("ZED | 2D View", image_to_show)
         cv2.waitKey(10)
       elif zed.grab() == sl.ERROR_CODE.END_OF_SVOFILE_REACHED:
         print("SVO end has been reached. Looping back to first frame")
