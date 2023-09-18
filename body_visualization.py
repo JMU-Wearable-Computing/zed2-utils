@@ -226,6 +226,8 @@ if __name__ == "__main__":
         window.append(image_left_ocv)
 
         # Change this value to shorten or lengthen the moving window
+        # Currently only works as a delay and does not properly filter
+        # Need to sort only using the part of the image that the hand/wrist is in. window.sort() sorts entire image
         if len(window) > 1:
           window.pop(0)
 
