@@ -192,8 +192,12 @@ if __name__ == "__main__":
   objects = sl.Objects()
   image = sl.Mat()
 
-  # Window to smooth skeleton movement
-  window = []
+  # Window to smooth skeleton movement (non-functional)
+  # window = []
+
+  # Windows for left and right wrists. Filter will only work with one object (person)
+  left_window = []
+  right_window = []
 
   with open(filename[:-4] + ".txt", 'w') as file:
     interval_time = time.time()
@@ -222,7 +226,11 @@ if __name__ == "__main__":
         # Update OCV view
         image_left_ocv = image.get_data()
 
-        # Update window
+        # Bypass non-functional filter
+        image_to_show = image_left_ocv
+
+        # Non-functional filter
+        '''# Update window
         window.append(image_left_ocv)
 
         # Change this value to shorten or lengthen the moving window
@@ -232,7 +240,7 @@ if __name__ == "__main__":
           window.pop(0)
 
         # Grab median image
-        image_to_show = window[int(len(window) / 2)]
+        image_to_show = window[int(len(window) / 2)]'''
 
         cv_viewer.render_2D(image_to_show, image_scale, objects.object_list, obj_param.enable_tracking,
                             obj_param.body_format)
@@ -247,6 +255,37 @@ if __name__ == "__main__":
           if len(obj_array) > 0:
             for object in objects.object_list:
               file.write("{},".format(unix_time))
+
+              # Get wrist keypoints
+              left_wrist = object.keypoint[16]
+              right_wrist = object.keypoint[17]
+
+              # Add to window
+              left_window.append(left_wrist)
+              right_window.append(right_wrist)
+
+              # Variable for window length. Must be >= 2
+              window_length = 5
+              median_index = int(len(left_window) / 2)
+
+              # Enforce window length
+              if len(left_window) > window_length:
+                left_window.pop(0)
+              if len(right_window) > window_length:
+                right_window.pop(0)
+
+              # Calculate magnitudes of arrays
+              lw_mag = [np.linalg.norm(coord) for coord in left_window]
+              rw_mag = [np.linalg.norm(coord) for coord in right_window]
+
+              # Argsort; median of this is the index of the median value in the window
+              lw_sorted = np.argsort(np.array(lw_mag))# list(np.sort(np.array(left_window)))
+              rw_sorted = np.argsort(np.array(rw_mag))# list(np.sort(np.array(right_window)))
+
+              # Replace current keypoint with median value
+              object.keypoint[16] = left_window[lw_sorted[median_index]]
+              object.keypoint[17] = right_window[rw_sorted[median_index]]
+
               for keypoint in analyzed_keypoints:
                 point = object.keypoint[keypoint]
                 # Writing to just this point at the moment
